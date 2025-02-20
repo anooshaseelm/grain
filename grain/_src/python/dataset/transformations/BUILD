@@ -273,3 +273,29 @@ py_test(
         "@abseil-py//absl/testing:parameterized",
     ],
 )
+
+py_library(
+    name = "packing_concat_then_split",
+    srcs = ["packing_concat_then_split.py"],
+    srcs_version = "PY3",
+    deps = [
+        "//grain/_src/core:exceptions",
+        "//grain/_src/core:tree_lib",
+        "//grain/_src/python/dataset",
+        "@abseil-py//absl/logging",
+        "@pypi//numpy:pkg",
+    ],
+)
+
+py_test(
+    name = "packing_concat_then_split_test",
+    srcs = ["packing_concat_then_split_test.py"],
+    srcs_version = "PY3",
+    deps = [
+        ":packing_concat_then_split",
+        "//grain/_src/python/dataset",
+        "@abseil-py//absl/testing:absltest",
+        "@abseil-py//absl/testing:parameterized",
+        "@pypi//numpy:pkg",
+    ],
+)
