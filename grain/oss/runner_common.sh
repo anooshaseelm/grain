@@ -91,7 +91,7 @@ update_bazel_macos() {
 install_grain_deps() {
   AR_DIR="$SOURCE_DIR"'/grain/oss/array_record'
   "$PYTHON_BIN" -m pip install -U --find-links="$AR_DIR" array_record --no-cache-dir;
-  "$PYTHON_BIN" -m pip install -r "$SOURCE_DIR"'/test_requirements.in'
+  "$PYTHON_BIN" -m pip install -r "$SOURCE_DIR"'/test_requirements.in' --no-cache-dir;
 }
 
 build_and_test_grain_macos() {
