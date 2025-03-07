@@ -14,7 +14,7 @@
 """Checks that OSS Grain Package works end-to-end."""
 from typing import Sequence
 from absl import app
-from grain import python as grain
+import grain
 
 
 def main(argv: Sequence[str]) -> None:
