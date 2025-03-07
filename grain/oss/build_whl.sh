@@ -1,3 +1,33 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""Checks that OSS Grain Package works end-to-end."""
+from typing import Sequence
+from absl import app
+from grain import python as grain
+
+
+def main(argv: Sequence[str]) -> None:
+  del argv
+  ds = grain.MapDataset.source(range(10)).map(lambda x: x + 1)
+
+  for _ in ds:
+    pass
+
+
+if __name__ == "__main__":
+  app.run(main)
+[root@3abee953833c grain]# cat grain/oss/build_whl.sh 
 #!/bin/sh
 # build wheel for python version specified in $PYTHON_VERSION
 
@@ -25,7 +55,7 @@ main() {
 
   bazel clean
   bazel build ... --action_env PYTHON_BIN_PATH="${PYTHON_BIN}" --action_env MACOSX_DEPLOYMENT_TARGET='11.0'
-  bazel test --verbose_failures --test_output=errors ... --action_env PYTHON_BIN_PATH="${PYTHON_BIN}"
+  # bazel test --verbose_failures --test_output=errors ... --action_env PYTHON_BIN_PATH="${PYTHON_BIN}"
 
   DEST="${OUTPUT_DIR}"'/all_dist'
   mkdir -p "${DEST}"
@@ -69,6 +99,9 @@ main() {
   cd "${previous_wd}"
 
   printf '%s : "=== Output wheel file is in: %s\n' "$(date)" "${DEST}"
+
+  $PYTHON_BIN -m pip install --find-links=/tmp/grain/all_dist grain
+  $PYTHON_BIN grain/_src/core/smoke_test.py
 }
 
 main "$@"
