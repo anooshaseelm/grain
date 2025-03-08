@@ -36,7 +36,8 @@ RUN --mount=type=cache,target=/root/.cache \
 # Install dependencies needed for grain.
 RUN --mount=type=cache,target=/root/.cache \
   $PYTHON_BIN -m pip install -U \
-    setuptools;
+    setuptools \
+    wheel;
 
 
 WORKDIR "/tmp/grain"
