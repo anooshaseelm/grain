@@ -18,8 +18,8 @@ main() {
   write_to_bazelrc "build --cxxopt=-Wno-deprecated-declarations --host_cxxopt=-Wno-deprecated-declarations"
   write_to_bazelrc "build --cxxopt=-Wno-parentheses --host_cxxopt=-Wno-parentheses"
   write_to_bazelrc "build --cxxopt=-Wno-sign-compare --host_cxxopt=-Wno-sign-compare"
-  write_to_bazelrc "build:macos --linkopt=-Wl,-undefined,dynamic_lookup"
-  write_to_bazelrc "build:macos --host_linkopt=-Wl,-undefined,dynamic_lookup"
+  write_to_bazelrc "build --linkopt=-Wl,-undefined,dynamic_lookup"
+  write_to_bazelrc "build --host_linkopt=-Wl,-undefined,dynamic_lookup"
 
   write_to_bazelrc "test --@rules_python//python/config_settings:python_version=${PYTHON_VERSION}"
   write_to_bazelrc "test --action_env PYTHON_VERSION=${PYTHON_VERSION}"
