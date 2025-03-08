@@ -88,6 +88,12 @@ update_bazel_macos() {
   export PATH
 }
 
+install_grain_deps() {
+  AR_DIR="$SOURCE_DIR"'/grain/oss/array_record'
+  "$PYTHON_BIN" -m pip install -U --find-links="$AR_DIR" array_record --no-cache-dir;
+  "$PYTHON_BIN" -m pip install setuptools wheel;
+}
+
 build_and_test_grain_macos() {
   SOURCE_DIR="$1"
   # Set up Bazel only if not set up for Array Record build.
@@ -107,6 +113,7 @@ build_and_test_grain_macos() {
     printf 'Creating Grain wheel for Python Version %s\n' "$PYTHON_VERSION"
     setup_env_vars_py "$PYTHON_MAJOR_VERSION" "$PYTHON_MINOR_VERSION"
     install_and_init_pyenv "${PYENV_ROOT}"
+    install_grain_deps
 
     sh "${SOURCE_DIR}/grain/oss/build_whl.sh"
   done
