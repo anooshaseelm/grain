@@ -45,6 +45,7 @@ SUPPORTED_PYTHON_VERSIONS = [
 DEFAULT_PYTHON_VERSION = "3.10"
 
 python_configure = use_extension("@pybind11_bazel//:python_configure.bzl", "extension")
+python_configure.toolchain(python_version = "3")
 use_repo(python_configure, "local_config_python")
 
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
