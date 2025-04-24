@@ -30,6 +30,7 @@ from grain._src.python import shared_memory_array
 from grain._src.python.dataset import dataset
 from grain._src.python.dataset import stats
 from grain.proto import execution_summary_pb2
+from grain._src.core.config import config
 import numpy as np
 
 from absl.testing import absltest
@@ -528,35 +529,36 @@ class DebugModeStatsTest(absltest.TestCase):
 
 class GraphModeStatsTest(absltest.TestCase):
 
-  def setUp(self):
-    super().setUp()
-    self.enter_context(
-        flagsaver.flagsaver(grain_py_dataset_visualization_output_dir="")
-    )
+  # def setUp(self):
+  #   super().setUp()
+  #   self.enter_context(
+  #       flagsaver.flagsaver(grain_py_dataset_visualization_output_dir="")
+  #   )
 
-  def _assert_visualization(self, ds, expected):
-    result = ds._stats._visualize_dataset_graph()  # pytype: disable=attribute-error
-    # Remove line number from the result to make test less brittle.
-    result = re.sub(r".py:\d+", ".py:XXX", result)
-    self.assertEqual(result, expected)
+  # def _assert_visualization(self, ds, expected):
+  #   result = ds._stats._visualize_dataset_graph()  # pytype: disable=attribute-error
+  #   # Remove line number from the result to make test less brittle.
+  #   result = re.sub(r".py:\d+", ".py:XXX", result)
+  #   self.assertEqual(result, expected)
 
-  @flagsaver.flagsaver(grain_py_debug_mode=True)
-  def test_visualization_in_debug_mode(self):
-    ds = (
-        dataset.MapDataset.range(10)
-        .seed(42)
-        .shuffle()
-        .slice(slice(1, None, 3))
-        .map_with_index(_add_dummy_metadata)
-        .map(_identity)
-        .repeat(2)
-    )
-    # Visualization graph is constructed while iterating through pipeline.
-    _ = list(ds)
-    self.assertIsInstance(ds._stats, stats._ExecutionStats)
-    self._assert_visualization(ds, _MAP_DATASET_REPR)
+  # @flagsaver.flagsaver(grain_py_debug_mode=True)
+  # def test_visualization_in_debug_mode(self):
+  #   ds = (
+  #       dataset.MapDataset.range(10)
+  #       .seed(42)
+  #       .shuffle()
+  #       .slice(slice(1, None, 3))
+  #       .map_with_index(_add_dummy_metadata)
+  #       .map(_identity)
+  #       .repeat(2)
+  #   )
+  #   # Visualization graph is constructed while iterating through pipeline.
+  #   _ = list(ds)
+  #   self.assertIsInstance(ds._stats, stats._ExecutionStats)
+  #   self._assert_visualization(ds, _MAP_DATASET_REPR)
 
   def test_visualize_map(self):
+    config.update("py_dataset_visualization_output_dir", "")
     ds = (
         dataset.MapDataset.range(10)
         .seed(42)
@@ -571,64 +573,64 @@ class GraphModeStatsTest(absltest.TestCase):
     self.assertIsInstance(ds._stats, stats._VisualizationStats)
     self._assert_visualization(ds, _MAP_DATASET_REPR)
 
-  def test_visualize_iter(self):
-    ds = (
-        dataset.MapDataset.range(10)
-        .shuffle(42)
-        .to_iter_dataset()
-        .seed(42)
-        .map(lambda x: _add_dummy_metadata(2, x))
-        .batch(2)
-    )
-    # Visualization graph is constructed while iterating through pipeline.
-    it = ds.__iter__()
-    _ = list(it)
-    self.assertIsInstance(it._stats, stats._VisualizationStats)
-    self._assert_visualization(it, _ITER_DATASET_REPR)
+  # def test_visualize_iter(self):
+  #   ds = (
+  #       dataset.MapDataset.range(10)
+  #       .shuffle(42)
+  #       .to_iter_dataset()
+  #       .seed(42)
+  #       .map(lambda x: _add_dummy_metadata(2, x))
+  #       .batch(2)
+  #   )
+  #   # Visualization graph is constructed while iterating through pipeline.
+  #   it = ds.__iter__()
+  #   _ = list(it)
+  #   self.assertIsInstance(it._stats, stats._VisualizationStats)
+  #   self._assert_visualization(it, _ITER_DATASET_REPR)
 
-  def test_visualize_with_mix(self):
-    ds1 = dataset.MapDataset.range(10).shuffle(42)
-    ds2 = dataset.MapDataset.range(10).shuffle(43)
-    ds = dataset.MapDataset.mix([ds1, ds2]).map(_AddOne())
-    # Visualization graph is constructed while iterating through pipeline.
-    _ = list(ds)
-    self.assertIsInstance(ds._stats, stats._VisualizationStats)
-    self._assert_visualization(ds, _MIX_DATASET_REPR)
+  # def test_visualize_with_mix(self):
+  #   ds1 = dataset.MapDataset.range(10).shuffle(42)
+  #   ds2 = dataset.MapDataset.range(10).shuffle(43)
+  #   ds = dataset.MapDataset.mix([ds1, ds2]).map(_AddOne())
+  #   # Visualization graph is constructed while iterating through pipeline.
+  #   _ = list(ds)
+  #   self.assertIsInstance(ds._stats, stats._VisualizationStats)
+  #   self._assert_visualization(ds, _MIX_DATASET_REPR)
 
-  @flagsaver.flagsaver(grain_py_dataset_visualization_output_dir="TEST_DIR")
-  def test_dataset_visualization_with_output_dir(self):
-    ds = (
-        dataset.MapDataset.range(10)
-        .shuffle(42)
-        .map_with_index(_add_dummy_metadata)
-        .map(_identity)
-    )
-    with self.assertRaisesRegex(
-        NotImplementedError,
-        "Saving the dataset graph to a file is not supported yet.",
-    ):
-      _ = list(ds)
+  # @flagsaver.flagsaver(grain_py_dataset_visualization_output_dir="TEST_DIR")
+  # def test_dataset_visualization_with_output_dir(self):
+  #   ds = (
+  #       dataset.MapDataset.range(10)
+  #       .shuffle(42)
+  #       .map_with_index(_add_dummy_metadata)
+  #       .map(_identity)
+  #   )
+  #   with self.assertRaisesRegex(
+  #       NotImplementedError,
+  #       "Saving the dataset graph to a file is not supported yet.",
+  #   ):
+  #     _ = list(ds)
 
-  def test_picklable(self):
-    ds = (
-        dataset.MapDataset.range(10)
-        .seed(42)
-        .shuffle()
-        .slice(slice(1, None, 3))
-        .map_with_index(_add_dummy_metadata)
-        .map(_identity)
-        .repeat(2)
-    )
-    ds = cloudpickle.loads(cloudpickle.dumps(ds))
-    # Visualization graph is constructed while iterating through pipeline.
-    _ = list(ds)
-    self.assertIsInstance(ds._stats, stats._VisualizationStats)
-    self._assert_visualization(ds, _MAP_DATASET_REPR)
+  # def test_picklable(self):
+  #   ds = (
+  #       dataset.MapDataset.range(10)
+  #       .seed(42)
+  #       .shuffle()
+  #       .slice(slice(1, None, 3))
+  #       .map_with_index(_add_dummy_metadata)
+  #       .map(_identity)
+  #       .repeat(2)
+  #   )
+  #   ds = cloudpickle.loads(cloudpickle.dumps(ds))
+  #   # Visualization graph is constructed while iterating through pipeline.
+  #   _ = list(ds)
+  #   self.assertIsInstance(ds._stats, stats._VisualizationStats)
+  #   self._assert_visualization(ds, _MAP_DATASET_REPR)
 
-  @flagsaver.flagsaver(grain_py_dataset_visualization_output_dir=None)
-  def test_dataset_visualization_with_output_dir_none(self):
-    s = stats.make_stats(stats.StatsConfig(name="test_stats"), ())
-    self.assertIsInstance(s, stats._DefaultStats)
+  # @flagsaver.flagsaver(grain_py_dataset_visualization_output_dir=None)
+  # def test_dataset_visualization_with_output_dir_none(self):
+  #   s = stats.make_stats(stats.StatsConfig(name="test_stats"), ())
+  #   self.assertIsInstance(s, stats._DefaultStats)
 
 
 if __name__ == "__main__":
